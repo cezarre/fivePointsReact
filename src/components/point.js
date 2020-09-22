@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Circle } from 'react-konva';
+import { Circle, Group, Layer } from 'react-konva';
 
 
 const Point = (props) => {
@@ -10,18 +10,25 @@ const Point = (props) => {
         if (props.onClick) {
             props.onClick(x, y);
         }
-        console.log(`Clicked (${x}, ${y})`);
     }
 
     return (
-        <Circle
-        x={x}
-        y={y}
-        radius={5}
-        fill={null}
-        stroke={color}
-        onClick={handleClick}
-        />
+        <Group>
+            <Circle
+            x={x}
+            y={y}
+            radius={5}
+            fill={null}
+            stroke={color}
+            />
+            <Circle
+            x={x}
+            y={y}
+            radius={10}
+            fill={null}
+            onClick={handleClick}
+            />
+        </Group>
      );
 }
 

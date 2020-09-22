@@ -6,27 +6,22 @@ import BlackLine from './blackLine'
 
 
 const Canvas = () => {
-  const [shouldShowLine, setShouldShowLine] = useState(false);
+  const [shouldShowLine, setShouldShowLine] = useState(false); // show dynamic line
   const [line, setLine] = useState([0, 0, 0, 0]); //[x1, y1, x2, y2]
   const [points, setPoints] = useState(generatePoints());
   const [lines, setLines] = useState([]);
 
-
   const handleClickOnStage = () => {
   }
 
-  const createConnetion = () => {
-    lines.push(line);
-  }
-
   const handleClickOnPoint = (x, y) => {
-    if (shouldShowLine) {
-      createConnetion();
-      setShouldShowLine(false);
-    }
-    else {
+    if (!shouldShowLine) { // first click
       setLine([x, y ,line[2], line[3]]);
       setShouldShowLine(true);
+    }
+    else { // second click
+      lines.push([line[0], line[1], x, y]); // create connetion between points
+      setShouldShowLine(false);
     }
   };
 
@@ -38,14 +33,21 @@ const Canvas = () => {
 
 
   return (
-    <Stage className='stage' width={500} height={window.innerHeight/2} onMouseMove={handleMouseMove} onClick={handleClickOnStage}>
+    <Stage className='stage' width={600} height={600} onMouseMove={handleMouseMove} onClick={handleClickOnStage}>
       <Layer>
         {shouldShowLine && <BlackLine x1={line[0]} y1={line[1]} x2={line[2]} y2={line[3]} />}
         {lines && lines.map(line => (
-          <BlackLine x1={line[0]} y1={line[1]} x2={line[2]} y2={line[3]} />
+          <BlackLine
+          key={"" + line[0] + line[1] + line[2] + line[3]}
+          x1={line[0]}
+          y1={line[1]}
+          x2={line[2]}
+          y2={line[3]}
+          />
         ))}
         {points.map(item => (
           <Point
+            key={"" + item.x + item.y}
             x={item.x}
             y={item.y}
             onClick={handleClickOnPoint}
@@ -59,12 +61,14 @@ const Canvas = () => {
 export default Canvas;
 
 const generatePoints = () => {
+  const multiplicator = 20;
+  const numberOfPoints = 30;
   const points = [];
-  for (let i=1; i<10; i++) {
-    for (let j=1; j<10; j++) {
+  for (let i=1; i<numberOfPoints; i++) {
+    for (let j=1; j<numberOfPoints; j++) {
       points.push({
-        x: i*20,
-        y: j*20
+        x: i*multiplicator,
+        y: j*multiplicator,
       });
     }
   }

@@ -14,10 +14,10 @@ function App() {
         </Col>
       </Row>
       <Row>
-        <Col xs={6}>
+        <Col xs={7}>
           <Canvas />
         </Col>
-        <Col xs={6}>
+        <Col xs={5}>
           Right bar
         </Col>
       </Row>
