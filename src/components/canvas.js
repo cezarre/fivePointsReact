@@ -35,7 +35,13 @@ const Canvas = () => {
   return (
     <Stage className='stage' width={600} height={600} onMouseMove={handleMouseMove} onClick={handleClickOnStage}>
       <Layer>
-        {shouldShowLine && <BlackLine x1={line[0]} y1={line[1]} x2={line[2]} y2={line[3]} />}
+        {shouldShowLine && <BlackLine
+        x1={line[0]}
+        y1={line[1]}
+        x2={line[2]}
+        y2={line[3]}
+        perfectDrawEnabled={false}
+        />}
         {lines && lines.map(line => (
           <BlackLine
           key={"" + line[0] + line[1] + line[2] + line[3]}
@@ -45,11 +51,14 @@ const Canvas = () => {
           y2={line[3]}
           />
         ))}
+      </Layer>
+      <Layer>
         {points.map(item => (
           <Point
             key={"" + item.x + item.y}
             x={item.x}
             y={item.y}
+            listening={true} // TODO: for optimization -- set to true only when point is possible to click
             onClick={handleClickOnPoint}
           />
         ))}

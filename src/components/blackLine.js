@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {Line} from 'react-konva';
 
-const BlackLine = (props) => {
+const BlackLine = React.memo((props) => {
   return (
     <Line
       points={[props.x1, props.y1, props.x2, props.y2]}
@@ -9,6 +9,6 @@ const BlackLine = (props) => {
       strokeWidth={2}
     />
    );
-}
+});
 
 export default BlackLine;
