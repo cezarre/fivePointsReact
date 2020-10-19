@@ -1,40 +1,57 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Circle, Group, Layer } from 'react-konva';
+import React, { useState, useEffect } from 'react';
+import { Circle, Group } from 'react-konva';
+import configData from "./../config.json";
 
 
-const Point = React.memo((props) => {
-    const [color, setColor] = useState("gray");
-    const { x, y, ...rest} = props;
-    const smallCircle = useRef(null);
+const Point = React.memo(props => {
+    const [color, setColor] = useState(configData.POINT.STROKE_COLOR_UNFILLED);
+    const { x, y, listening, status } = props;
+    const [pointStatus, setPointStatus] = useState(() => //unfilled, filled, origin
+        typeof(status) !== 'undefined' ? status : 'unfilled'
+    );
 
     const handleClick = () => {
         if (props.onClick) {
-            props.onClick(x, y);
+            if (!props.onClick(x, y)) {
+                return;
+            }
         }
-        console.log(smallCircle);
     }
 
+    useEffect(() => {
+        if (pointStatus === 'filled') {
+            setColor(configData.POINT.STROKE_COLOR_FILLED);
+        } else if (pointStatus === 'origin') {
+            setColor(configData.POINT.STROKE_COLOR_ORIGIN);
+        } else {
+            setPointStatus(status); // to maintain color for origin
+        }
+    }, [pointStatus, status]);
 
     return (
         <Group>
             <Circle
             x={x}
             y={y}
-            radius={5}
+            radius={configData.POINT.RADIUS}
             fill={null}
             stroke={color}
-            ref={smallCircle}
             />
             <Circle
             x={x}
             y={y}
-            radius={10}
+            radius={configData.POINT.MOUSE_LISTENER_RADIUS}
             fill={null}
-            listening={props.listening}
+            listening={listening}
             onClick={handleClick}
             />
         </Group>
      );
 });
 
-export default Point;
+const shouldNotUpdate = (prevProps, nextProps) => {
+    return false; //TEMPORARY ; NOT OPTIMIZED ; WORKS EVERY TIME!!!!!!!!!!
+}
+
+export default React.memo(Point, shouldNotUpdate);
+
