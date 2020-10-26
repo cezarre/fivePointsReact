@@ -1,7 +1,18 @@
 
 .canvas {
   border:1px solid #d3d3d3;
+  margin: auto;
 }
 .stage {
-  background-color: lightskyblue;
+  background-color: rgb(142, 212, 230);
+}
+.footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  text-align: center;
+  padding: 1em;
+  background-color: rgb(0, 47, 255);
+  color: white;
 }

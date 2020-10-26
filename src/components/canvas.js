@@ -19,16 +19,22 @@ const Canvas = () => {
       return false;
     }
     else { // second click
-      if (!validateMove(line[0], line[1], x, y)) {
+      let [x1, y1, x2, y2] = [line[0], line[1], x, y];
+      if (x1 > x2) { // swapping variables that every first point is on the top left
+        [x1, x2] = [x2, x1];
+        [y1, y2] = [y2, y1];
+      } else if ( x1 === x2) {
+          if (y1 > y2) {
+            [x1, x2] = [x2, x1];
+            [y1, y2] = [y2, y1];
+          }
+      }
+      if (!validateMove(x1, y1, x2, y2)) {
         setShouldShowLine(false);
         return false;
       }
-      lines.push([line[0], line[1], x, y]); // create connetion between points
+      lines.push([x1, y1, x2, y2]); // create connetion between points
       setShouldShowLine(false);
-
-      //line has the cordinates for the first click
-      fillPoint(line[0], line[1]); // THIS IS FOR 1st CLICK
-      fillPoint(x, y); // THIS IS FOR 2nd CLICK
 
       return true;
     }
@@ -48,24 +54,78 @@ const Canvas = () => {
   }
 
   const validateMove = (x1, y1, x2, y2) => {
-    [x1, x2] = x1 > x2 ? [x2, x1] : [x1, x2];
-    [y1, y2] = y1 > y2 ? [y2, y1] : [y1, y2];
+    let direction = '';
     console.log(x1 + ' ' + y1 + ' ' + x2 + ' ' + y2);
+
+    if (x1 === x2) {
+      direction = 'down';
+    } else {
+      if (y2 > y1) {
+        direction = 'down-right';
+      } else if (y2 === y1) {
+        direction = 'right';
+      } else {
+        direction = 'up-right';
+      }
+    }
+    console.log(direction);
     const separator = configData.POINT_SEPARATOR;
-    const point1 = points[convertPointIndex(x1/configData.POINT_SEPARATOR - 1,
-                          y1/configData.POINT_SEPARATOR - 1,
-                          0)];
 
-    console.log(point1)
+    const point1Index = convertPointIndexWithSeparator(x1, y1);
+
+    console.log(points[point1Index]);
     // checking for the length
-    if (!((x2/separator - x1/separator + 1 === 5 && y2 - y1 === 0) ||
-        (y2/separator - y1/separator + 1 === 5 && x2 - x1 === 0) ||
-        (x2/separator - x1/separator + 1 === 5 && y2/separator - y1/separator + 1 === 5 ))) {
+    if (!((x2/separator - x1/separator + 1 === 5 && y2 - y1 === 0) ||                                   // horizontal lines
+        (y2/separator - y1/separator + 1 === 5 && x2 - x1 === 0) ||                                     // vertical lines
+        (x2/separator - x1/separator + 1 === 5 && Math.abs(y2/separator - y1/separator) + 1 === 5 ))) { // slanted lines
           return false;
-        }
+    }
 
-    // checking for starting points
-    // ...
+
+    // checking whether there are 4 unfilled points
+    let pointsCounter = 0;
+    let x_unfilled = x1;
+    let y_unfilled = y1;
+
+    for (let i=0; i < 5 ; i++) {
+      //console.log(x1 + ' ' + y1 + ' ' + convertPointIndexWithSeparator(x1 + i, y1));
+      console.log(points[convertPointIndexWithSeparator(x1 + i*configData.POINT_SEPARATOR, y1)])
+      // Direction RIGHT
+      if (direction === 'down') {
+        if (points[convertPointIndexWithSeparator(x1, y1 + i*configData.POINT_SEPARATOR)].status !== 'unfilled') {
+          pointsCounter++;
+        } else {
+          y_unfilled = y1 + i*configData.POINT_SEPARATOR;
+        }
+      }
+      if (direction === 'down-right') {
+        if (points[convertPointIndexWithSeparator(x1 + i*configData.POINT_SEPARATOR, y1 + i*configData.POINT_SEPARATOR)].status !== 'unfilled') {
+          pointsCounter++;
+        } else {
+          x_unfilled = x1 + i*configData.POINT_SEPARATOR;
+          y_unfilled = y1 + i*configData.POINT_SEPARATOR;
+        }
+      }
+      if (direction === 'right') {
+        if (points[convertPointIndexWithSeparator(x1 + i*configData.POINT_SEPARATOR, y1)].status !== 'unfilled') {
+          pointsCounter++;
+        } else {
+          x_unfilled = x1 + i*configData.POINT_SEPARATOR;
+        }
+      }
+      if (direction === 'up-right') {
+        if (points[convertPointIndexWithSeparator(x1 + i*configData.POINT_SEPARATOR, y1 - i*configData.POINT_SEPARATOR)].status !== 'unfilled') {
+          pointsCounter++;
+        } else {
+          x_unfilled = x1 + i*configData.POINT_SEPARATOR;
+          y_unfilled = y1 - i*configData.POINT_SEPARATOR;
+        }
+      }
+    }
+    if (pointsCounter !== 4) return false;
+    // TODO: CHECK LINE IS NOT COVERING ANY EXISTING LINE
+    fillPoint(x_unfilled, y_unfilled);
+    console.log('counter ' +  pointsCounter + ' unfilled x ' + x_unfilled)
     return true;
   }
 
@@ -130,6 +190,10 @@ const generatePoints = () => {
 const initialFill = (points, numberOfPoints) => {
   const leftOfset = Math.floor(numberOfPoints / 2 - 5);
 
+  points.forEach(point => {
+    point.status = 'unfilled';
+  });
+
   points[convertPointIndex(0, 4, leftOfset)].status = 'origin';
   points[convertPointIndex(0, 5, leftOfset)].status = 'origin';
   points[convertPointIndex(0, 6, leftOfset)].status = 'origin';
@@ -179,6 +243,11 @@ const initialFill = (points, numberOfPoints) => {
   points[convertPointIndex(0, 3, leftOfset)].status = 'origin';
 }
 
+const convertPointIndexWithSeparator = (x, y) => {
+  return convertPointIndex(x/configData.POINT_SEPARATOR - 1,
+         y/configData.POINT_SEPARATOR - 1,
+         0);
+}
 
 const convertPointIndex = (x, y, leftOfset) => { // converting from 2d to 1d array
   const numberOfPoints = configData.NUMBER_OF_POINTS;
