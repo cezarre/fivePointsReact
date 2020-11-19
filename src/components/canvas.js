@@ -3,6 +3,8 @@ import { Stage, Layer } from 'react-konva';
 import Point from './point';
 import BlackLine from './blackLine';
 import configData from '../config.json';
+import { Col, Button, Badge, Row} from 'react-bootstrap';
+import useForceUpdate from 'use-force-update';
 
 
 const Canvas = () => {
@@ -10,7 +12,19 @@ const Canvas = () => {
   const [line, setLine] = useState([0, 0, 0, 0]); //[x1, y1, x2, y2]
   const [points] = useState(generatePoints());
   const [lines] = useState([]);
+  const [filledPoints] = useState([]);
+  const forceUpdate = useForceUpdate();
+  const [score, setScore] = useState(0);
 
+  const handleUndo = () => {
+    if (score <= 0) return;
+
+    lines.pop();
+    const [x, y] = filledPoints.pop();
+    unFillPoint(x, y);
+    setScore(score - 1);
+    forceUpdate();
+  }
 
   const handleClickOnPoint = (x, y) => {
     if (!shouldShowLine) { // first click
@@ -29,12 +43,19 @@ const Canvas = () => {
             [y1, y2] = [y2, y1];
           }
       }
-      if (!validateMove(x1, y1, x2, y2)) {
+      const validation = validateMove(x1, y1, x2, y2);
+      if (!validation) {
         setShouldShowLine(false);
         return false;
       }
+      const [x_toFill, y_toFill] = validation;
+
+      //finilize move and make changes to game state
       lines.push([x1, y1, x2, y2]); // create connetion between points
       setShouldShowLine(false);
+      fillPoint(x_toFill, y_toFill)
+      filledPoints.push([x_toFill, y_toFill]);
+      setScore(score + 1);
 
       return true;
     }
@@ -53,9 +74,15 @@ const Canvas = () => {
     points[index].status = 'filled';
   }
 
+  const unFillPoint = (x, y) => {
+    let index = convertPointIndex(x/configData.POINT_SEPARATOR - 1,
+                                  y/configData.POINT_SEPARATOR - 1,
+                                  0);
+    points[index].status = 'unfilled';
+  }
+
   const validateMove = (x1, y1, x2, y2) => {
     let direction = '';
-    console.log(x1 + ' ' + y1 + ' ' + x2 + ' ' + y2);
 
     if (x1 === x2) {
       direction = 'down';
@@ -68,12 +95,8 @@ const Canvas = () => {
         direction = 'up-right';
       }
     }
-    console.log(direction);
     const separator = configData.POINT_SEPARATOR;
 
-    const point1Index = convertPointIndexWithSeparator(x1, y1);
-
-    console.log(points[point1Index]);
     // checking for the length
     if (!((x2/separator - x1/separator + 1 === 5 && y2 - y1 === 0) ||                                   // horizontal lines
         (y2/separator - y1/separator + 1 === 5 && x2 - x1 === 0) ||                                     // vertical lines
@@ -88,8 +111,6 @@ const Canvas = () => {
     let y_unfilled = y1;
 
     for (let i=0; i < 5 ; i++) {
-      //console.log(x1 + ' ' + y1 + ' ' + convertPointIndexWithSeparator(x1 + i, y1));
-      console.log(points[convertPointIndexWithSeparator(x1 + i*configData.POINT_SEPARATOR, y1)])
       // Direction RIGHT
       if (direction === 'down') {
         if (points[convertPointIndexWithSeparator(x1, y1 + i*configData.POINT_SEPARATOR)].status !== 'unfilled') {
@@ -124,45 +145,59 @@ const Canvas = () => {
     }
     if (pointsCounter !== 4) return false;
     // TODO: CHECK LINE IS NOT COVERING ANY EXISTING LINE
-    fillPoint(x_unfilled, y_unfilled);
-    console.log('counter ' +  pointsCounter + ' unfilled x ' + x_unfilled)
-    return true;
+    return [x_unfilled, y_unfilled];
   }
 
   return (
-    <Stage className='stage' width={configData.STAGE.WIDTH} height={configData.STAGE.HEIGHT}
-    onMouseMove={handleMouseMove}>
-      <Layer>
-        {shouldShowLine &&
-        <BlackLine
-        x1={line[0]}
-        y1={line[1]}
-        x2={line[2]}
-        y2={line[3]}
-        />}
-        {lines && lines.map(line => (
-          <BlackLine
-          key={"" + line[0] + line[1] + line[2] + line[3]}
-          x1={line[0]}
-          y1={line[1]}
-          x2={line[2]}
-          y2={line[3]}
-          />
-        ))}
-      </Layer>
-      <Layer>
-        {points.map(item => (
-          <Point
-            key={"" + item.x + item.y}
-            x={item.x}
-            y={item.y}
-            status={item.status}
-            listening={true} // TODO: for optimization -- set to true only when point is possible to click [POSSIBLY NOT WORKING]
-            onClick={handleClickOnPoint}
-        ></Point>
-        ))}
-      </Layer>
-    </Stage>
+    <React.Fragment>
+      <Col xs>
+        <Stage className='stage' width={configData.STAGE.WIDTH} height={configData.STAGE.HEIGHT}
+        onMouseMove={handleMouseMove}>
+          <Layer>
+            {shouldShowLine &&
+            <BlackLine
+            x1={line[0]}
+            y1={line[1]}
+            x2={line[2]}
+            y2={line[3]}
+            />}
+            {lines && lines.map(line => (
+              <BlackLine
+              key={"" + line[0] + line[1] + line[2] + line[3]}
+              x1={line[0]}
+              y1={line[1]}
+              x2={line[2]}
+              y2={line[3]}
+              />
+            ))}
+          </Layer>
+          <Layer>
+            {points.map(item => (
+              <Point
+                key={"" + item.x + item.y}
+                x={item.x}
+                y={item.y}
+                status={item.status}
+                listening={true} // TODO: for optimization -- set to true only when point is possible to click [POSSIBLY NOT WORKING]
+                onClick={handleClickOnPoint}
+            ></Point>
+            ))}
+          </Layer>
+        </Stage>
+      </Col>
+      <Col xs className="rightpanel__col">
+        <div className="conteiner rightpanel__conteiner">
+          <Row>
+            <div className="score">
+              Score <Badge variant="info">{score}</Badge>
+            </div>
+          </Row>
+          <Row>
+            <Button variant="outline-warning" onClick={handleUndo} className="undo_button">Undo</Button>
+          </Row>
+        </div>
+      </Col>
+    </React.Fragment>
   );
 };
 

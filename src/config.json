@@ -1,6 +1,6 @@
 {
   "POINT_SEPARATOR": 20,
-  "NUMBER_OF_POINTS": 20,
+  "NUMBER_OF_POINTS": 26,
   "POINT": {
     "RADIUS": 4,
     "MOUSE_LISTENER_RADIUS": 10,
@@ -13,7 +13,7 @@
     "STROKE_WIDTH": 2
   },
   "STAGE": {
-    "WIDTH": 500,
-    "HEIGHT": 500
+    "WIDTH": 560,
+    "HEIGHT": 560
   }
 }

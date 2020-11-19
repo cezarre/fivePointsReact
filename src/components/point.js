@@ -6,9 +6,6 @@ import configData from "./../config.json";
 const Point = React.memo(props => {
     const [color, setColor] = useState(configData.POINT.STROKE_COLOR_UNFILLED);
     const { x, y, listening, status } = props;
-    const [pointStatus, setPointStatus] = useState(() => //unfilled, filled, origin
-        typeof(status) !== 'undefined' ? status : 'unfilled'
-    );
 
     const handleClick = () => {
         if (props.onClick) {
@@ -19,14 +16,14 @@ const Point = React.memo(props => {
     }
 
     useEffect(() => {
-        if (pointStatus === 'filled') {
+        if (status === 'filled') {
             setColor(configData.POINT.STROKE_COLOR_FILLED);
-        } else if (pointStatus === 'origin') {
+        } else if (status === 'origin') {
             setColor(configData.POINT.STROKE_COLOR_ORIGIN);
         } else {
-            setPointStatus(status); // to maintain color for origin
+            setColor(configData.POINT.STROKE_COLOR_UNFILLED);
         }
-    }, [pointStatus, status]);
+    }, [status]);
 
     return (
         <Group>
