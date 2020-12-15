@@ -145,6 +145,7 @@ const Canvas = () => {
     }
     if (pointsCounter !== 4) return false;
     // TODO: CHECK LINE IS NOT COVERING ANY EXISTING LINE
+
     return [x_unfilled, y_unfilled];
   }
 
@@ -193,7 +194,7 @@ const Canvas = () => {
             </div>
           </Row>
           <Row>
-            <Button variant="outline-warning" onClick={handleUndo} className="undo_button">Undo</Button>
+            <Button variant="outline-dark" onClick={handleUndo} className="undo_button">Undo</Button>
           </Row>
         </div>
       </Col>
@@ -227,6 +228,7 @@ const initialFill = (points, numberOfPoints) => {
 
   points.forEach(point => {
     point.status = 'unfilled';
+    point.lineCovering = "";
   });
 
   points[convertPointIndex(0, 4, leftOfset)].status = 'origin';

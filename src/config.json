@@ -6,7 +6,7 @@
     "MOUSE_LISTENER_RADIUS": 10,
     "STROKE_COLOR_UNFILLED": "gray",
     "STROKE_COLOR_FILLED": "black",
-    "STROKE_COLOR_ORIGIN": "red"
+    "STROKE_COLOR_ORIGIN": "darkblue"
   },
   "BLACK_LINE": {
     "STROKE": "black",

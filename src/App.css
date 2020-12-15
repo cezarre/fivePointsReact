@@ -3,12 +3,15 @@ html, body {
   overflow-x: hidden;
 }
 
+.navbar {
+  background-color: #B98EA7;
+}
 .canvas {
   border:1px solid #d3d3d3;
   margin: auto;
 }
 .stage {
-  background-color: rgb(142, 212, 230);
+  background-color: #d3d3d3;
   margin-top: 1em;
   margin-bottom: 1em;
   border-radius: 20px;
@@ -27,7 +30,7 @@ html, body {
   padding: 1em;
   background-color: #fcfce5;
   color: black;
-  opacity: 50%;
+  opacity: 60%;
 }
 
 .colcanvas {
@@ -50,13 +53,13 @@ html, body {
 }
 
 .gamerules {
-  background-color: rgb(209, 183, 219);
+  background-color: #F0D3F7;
   opacity: 90%;
   border-radius: 20px 0px 0px 20px;
   width: 100%;
-  height: 300px;
+  height: 400px;
   position: absolute;
-  top: 20%;
+  top: 10%;
   padding: 2em;
   transform: translateX(100%);
   transition: transform 2s ease-in-out;
@@ -65,11 +68,9 @@ html, body {
   transform: translateX(0);
 }
 
-
-
 .rulesbutton {
   border-radius: 10px 10px 0px 0px;
-  background-color: rgb(209, 183, 219);
+  background-color: #F0D3F7;
   width: 5em;
   height: 2em;
   text-align: center;
@@ -79,6 +80,8 @@ html, body {
   transform: translate(0, -50%) rotate(-90deg);
   left: -3.2em;
   cursor: default;
+
+  padding: 1px;
 }
 
 .rulesbutton::before {
@@ -92,7 +95,7 @@ html, body {
   width: 20px;
   transform: rotate(-90deg);
   border-top-left-radius: 25px;
-  box-shadow: 0 -25px 0 0 rgb(209, 183, 219);
+  box-shadow: 0 -25px 0 0 #F0D3F7;
   z-index: -1;
 }
 
@@ -107,7 +110,7 @@ html, body {
   width: 20px;
   transform: rotate(180deg);
   border-top-left-radius: 25px;
-  box-shadow: 0 -25px 0 0 rgb(209, 183, 219);
+  box-shadow: 0 -25px 0 0 #F0D3F7;
   z-index: -1;
 }
 

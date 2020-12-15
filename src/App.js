@@ -8,7 +8,7 @@ function App() {
   return (
     <React.Fragment>
       <Container>
-        <Navbar bg="primary" variant="dark">
+        <Navbar variant="dark" className="navbar">
           <Navbar.Brand href="/">Five Points Game</Navbar.Brand>
         </Navbar>
         <Row className="firstrow">
