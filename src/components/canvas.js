@@ -3,7 +3,7 @@ import { Stage, Layer } from 'react-konva';
 import Point from './point';
 import BlackLine from './blackLine';
 import configData from '../config.json';
-import { Col, Button, Badge, Row} from 'react-bootstrap';
+import { Col, Button, Badge, Row } from 'react-bootstrap';
 import useForceUpdate from 'use-force-update';
 
 
@@ -15,6 +15,7 @@ const Canvas = () => {
   const [filledPoints] = useState([]);
   const forceUpdate = useForceUpdate();
   const [score, setScore] = useState(0);
+  const [directionFulfillment] = useState([]);
 
   const handleUndo = () => {
     if (score <= 0) return;
@@ -23,6 +24,7 @@ const Canvas = () => {
     const [x, y] = filledPoints.pop();
     unFillPoint(x, y);
     setScore(score - 1);
+    undoDirection();
     forceUpdate();
   }
 
@@ -48,13 +50,14 @@ const Canvas = () => {
         setShouldShowLine(false);
         return false;
       }
-      const [x_toFill, y_toFill] = validation;
+      const [x_toFill, y_toFill, x_orig, y1_orig, direction] = validation;
 
       //finilize move and make changes to game state
       lines.push([x1, y1, x2, y2]); // create connetion between points
       setShouldShowLine(false);
       fillPoint(x_toFill, y_toFill)
       filledPoints.push([x_toFill, y_toFill]);
+      fillDirection(x_orig, y1_orig, direction);
       setScore(score + 1);
 
       return true;
@@ -65,6 +68,49 @@ const Canvas = () => {
     const mouseX = e.evt.offsetX;
     const mouseY = e.evt.offsetY;
     setLine([line[0], line[1], mouseX, mouseY]);
+  }
+
+  const fillDirection = (x_orig, y1_orig, direction) => {
+    for (let i=0; i < 4 ; i++) {
+      if (direction === 'down') {
+        const point = points[convertPointIndexWithSeparator(x_orig, y1_orig + i*configData.POINT_SEPARATOR)];
+        point.down = true;
+        directionFulfillment.push([point, 'down']);
+      }
+      if (direction === 'down-right') {
+        const point = points[convertPointIndexWithSeparator(x_orig + i*configData.POINT_SEPARATOR, y1_orig + i*configData.POINT_SEPARATOR)];
+        point.down_right = true;
+        directionFulfillment.push([point, 'down-right']);
+      }
+      if (direction === 'right') {
+        const point = points[convertPointIndexWithSeparator(x_orig + i*configData.POINT_SEPARATOR, y1_orig)];
+        point.right = true;
+        directionFulfillment.push([point, 'right']);
+      }
+      if (direction === 'up-right') {
+        const point = points[convertPointIndexWithSeparator(x_orig + i*configData.POINT_SEPARATOR, y1_orig - i*configData.POINT_SEPARATOR)];
+        point.up_right = true;
+        directionFulfillment.push([point, 'up-right']);
+      }
+    }
+  }
+
+  const undoDirection = () => {
+    for (let i=0 ; i < 4 ; i++) {
+      const [point, direction] = directionFulfillment.pop();
+      if (direction === 'down') {
+        point.down = false;
+      }
+      if (direction === 'down-right') {
+        point.down_right = false;
+      }
+      if (direction === 'right') {
+        point.right = false;
+      }
+      if (direction === 'up-right') {
+        point.up_right = false;
+      }
+    }
   }
 
   const fillPoint = (x, y) => {
@@ -144,9 +190,32 @@ const Canvas = () => {
       }
     }
     if (pointsCounter !== 4) return false;
-    // TODO: CHECK LINE IS NOT COVERING ANY EXISTING LINE
 
-    return [x_unfilled, y_unfilled];
+    // CHECKING IF LINE IS NOT COVERING ANY EXISTING LINE
+    for (let i=0; i < 4 ; i++) {
+      if (direction === 'down') {
+        if (points[convertPointIndexWithSeparator(x1, y1 + i*configData.POINT_SEPARATOR)].down) {
+          return false;
+        }
+      }
+      if (direction === 'down-right') {
+        if (points[convertPointIndexWithSeparator(x1 + i*configData.POINT_SEPARATOR, y1 + i*configData.POINT_SEPARATOR)].down_right) {
+          return false;
+        }
+      }
+      if (direction === 'right') {
+        if (points[convertPointIndexWithSeparator(x1 + i*configData.POINT_SEPARATOR, y1)].right) {
+          return false;
+        }
+      }
+      if (direction === 'up-right') {
+        if (points[convertPointIndexWithSeparator(x1 + i*configData.POINT_SEPARATOR, y1 - i*configData.POINT_SEPARATOR)].up_right) {
+          return false;
+        }
+      }
+    }
+
+    return [x_unfilled, y_unfilled, x1, y1, direction];
   }
 
   return (

@@ -19,7 +19,6 @@ html, body {
   padding-top: 1em;
 }
 .footer {
-  position: fixed;
   bottom: 0;
   width: 100%;
 
@@ -28,7 +27,7 @@ html, body {
 
   text-align: center;
   padding: 1em;
-  background-color: #fcfce5;
+  background-color: #b4b47d;
   color: black;
   opacity: 60%;
 }

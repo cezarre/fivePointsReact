@@ -27,9 +27,11 @@ function App() {
             </div>
           </Col>
         </Row>
-        <footer className="conteiner footer" bg="primary">
-          cezary.olkowski@gmail.com
-        </footer>
+        <Row>
+          <footer className="conteiner footer" bg="primary">
+            cezary.olkowski@gmail.com
+          </footer>
+        </Row>
       </Container>
     </React.Fragment>
   );
