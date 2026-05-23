@@ -87,11 +87,22 @@ describe('gameRules', () => {
     });
 
     it('validates and returns move data for valid moves', () => {
-      const result = validateMove(20, 80, 100, 80, initialPoints, POINT_SEPARATOR);
+      const points = generatePoints().map(point => ({ ...point }));
+      const fillPoint = (x, y) => {
+        const index = points.findIndex(p => p.x === x && p.y === y);
+        if (index >= 0) points[index] = { ...points[index], status: 'filled' };
+      };
+
+      fillPoint(20, 20);
+      fillPoint(40, 20);
+      fillPoint(60, 20);
+      fillPoint(80, 20);
+
+      const result = validateMove(20, 20, 100, 20, points, POINT_SEPARATOR);
       expect(result).toBeTruthy();
       if (result) {
         expect(result.direction).toBe('right');
-        expect(result.emptyPoint).toBeDefined();
+        expect(result.emptyPoint).toEqual({ x: 100, y: 20 });
       }
     });
   });

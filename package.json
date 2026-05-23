@@ -1,8 +1,10 @@
 {
+  "homepage": "https://cezarre.github.io/fivePointsReact",
   "name": "five-points",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@rollup/wasm-node": "^4.60.4",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
@@ -15,6 +17,8 @@
     "use-force-update": "^1.0.7"
   },
   "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist",
     "start": "vite",
     "dev": "vite",
     "build": "vite build",
@@ -39,9 +43,9 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.1",
+    "@vitest/ui": "^1.0.4",
     "cross-env": "^7.0.3",
     "vite": "^5.4.1",
-    "vitest": "^1.0.4",
-    "@vitest/ui": "^1.0.4"
+    "vitest": "^1.0.4"
   }
 }

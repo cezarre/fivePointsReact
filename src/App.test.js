@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
 describe('App', () => {
-  it('is defined', () => {
+  it('runs a dummy assertion', () => {
     expect(true).toBe(true);
   });
 });
