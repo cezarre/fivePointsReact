@@ -16,7 +16,7 @@ function App() {
 
         <Row className="firstrow justify-content-center">
           <Canvas />
-          <div className="gamerulescol d-none d-md-block"> {/* Hide on small screens, show on medium and up */}
+          <div className="gamerulescol">
           <div className="gamerules shadow-lg">
             <h5 className="fw-bold mb-4">Game Rules</h5>
             <ListGroup variant="flush">

@@ -1,20 +1,81 @@
-import React, { useState } from 'react';
-import { Stage, Layer } from 'react-konva';
+import React, { useState, useEffect } from 'react';
+import { Stage, Layer, Line } from 'react-konva';
+import { createClient } from '@supabase/supabase-js';
 import Point from './point';
 import BlackLine from './blackLine';
 import configData from '../config.json';
-import { Col, Button, Badge, Row, Card, Stack } from 'react-bootstrap';
+import { Col, Button, Badge, Row, Card, Stack, Table, Modal, Form } from 'react-bootstrap';
 import { useGameState } from '../hooks/useGameState';
 import { normalizeLine, validateMove } from '../utils/gameRules';
+
+// Initialize Supabase client
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 const Canvas = () => {
   const [shouldShowLine, setShouldShowLine] = useState(false);
   const [line, setLine] = useState([0, 0, 0, 0]);
+  const [hint, setHint] = useState(null);
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [isGameOver, setIsGameOver] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [playerName, setPlayerName] = useState('');
+
   const { lines, points, addLine, undo, score } = useGameState();
+
+  // Logic to calculate valid moves for Hint and Game Over check
+  const getValidMoves = () => {
+    const moves = [];
+    const directions = [
+      { dx: 1, dy: 0 }, { dx: 0, dy: 1 },
+      { dx: 1, dy: 1 }, { dx: 1, dy: -1 }
+    ];
+    const sep = configData.POINT_SEPARATOR;
+
+    points.forEach(p => {
+      directions.forEach(d => {
+        const x1 = p.x;
+        const y1 = p.y;
+        const x2 = x1 + 4 * d.dx * sep;
+        const y2 = y1 + 4 * d.dy * sep;
+
+        const validation = validateMove(x1, y1, x2, y2, points, sep);
+        if (validation) {
+          moves.push({ x1, y1, x2, y2 });
+        }
+      });
+    });
+    return moves;
+  };
+
+  const fetchScores = async () => {
+    const { data, error } = await supabase
+      .from('five_points_game_scores')
+      .select('name, score')
+      .order('score', { ascending: false })
+      .limit(10);
+
+    if (error) {
+      console.error('Supabase Fetch Error:', error.message, '| Hint:', error.hint);
+    } else {
+      setLeaderboard(data || []);
+    }
+  };
+
+  // Check for game over whenever lines or points change
+  useEffect(() => {
+    fetchScores();
+    if (points.length > 0 && getValidMoves().length === 0) {
+      setIsGameOver(true);
+    }
+  }, [lines, points]);
 
   const handleUndo = () => {
     if (!undo()) return;
     setShouldShowLine(false);
+    setHint(null);
+    setIsGameOver(false);
   };
 
   const handleClickOnPoint = (x, y) => {
@@ -43,8 +104,35 @@ const Canvas = () => {
 
     addLine(newLine);
     setShouldShowLine(false);
+    setHint(null);
 
     return true;
+  };
+
+  const handleHint = () => {
+    const moves = getValidMoves();
+    if (moves.length > 0) {
+      const randomMove = moves[Math.floor(Math.random() * moves.length)];
+      setHint(randomMove);
+    }
+  };
+
+  const handleFinish = () => setShowModal(true);
+  const handleClose = () => setShowModal(false);
+
+  const handleSaveScore = async () => {
+    if (!playerName.trim()) return;
+
+    const { error } = await supabase
+      .from('five_points_game_scores')
+      .insert([{ name: playerName, score: score }]);
+
+    if (error) {
+      console.error('Supabase Save Error:', error.message, '| Details:', error.details);
+    } else {
+      setShowModal(false);
+      fetchScores(); // Refresh the leaderboard after saving
+    }
   };
 
   const handleMouseMove = e => {
@@ -77,6 +165,17 @@ const Canvas = () => {
                 y2={savedLine.y2}
               />
             ))}
+            {hint && (
+              <Line
+                points={[hint.x1, hint.y1, hint.x2, hint.y2]}
+                stroke="#A5B4FC"
+                strokeWidth={configData.BLACK_LINE.STROKE_WIDTH + 2}
+                dash={[10, 5]}
+                shadowColor="#A5B4FC"
+                shadowBlur={10}
+                opacity={0.8}
+              />
+            )}
           </Layer>
           <Layer>
             {points.map(item => (
@@ -99,14 +198,90 @@ const Canvas = () => {
               <div className="text-center">
                 <div className="small text-light-gray text-uppercase fw-bold mb-1">Current Score</div>
                 <div className="display-4 fw-bold text-indigo">{score}</div>
+                {isGameOver && (
+                  <Badge bg="danger" className="mt-2">Game Over - No Moves Left</Badge>
+                )}
               </div>
-              <Button variant='dark' size="lg" onClick={handleUndo} className='rounded-pill py-2 shadow-sm'>
+              <Button variant='outline-light' onClick={handleUndo} className='rounded-pill py-2 shadow-sm'>
                 Undo Move
               </Button>
+              <Button 
+                variant='indigo' 
+                onClick={handleHint} 
+                className='rounded-pill py-2 shadow-sm text-white'
+                disabled={isGameOver}
+              >
+                Get Hint
+              </Button>
+              <Button 
+                variant='success' 
+                onClick={handleFinish} 
+                className='rounded-pill py-2 shadow-sm'
+              >
+                Finish Game
+              </Button>
+
+              <div className="mt-2 pt-3 border-top border-secondary">
+                <div className="small text-light-gray text-uppercase fw-bold mb-2">Leaderboard</div>
+                <Table responsive borderless hover size="sm" variant="dark" className="leaderboard-table mb-0">
+                  <thead>
+                    <tr className="text-muted small border-bottom border-secondary">
+                      <th>NAME</th>
+                      <th className="text-end">SCORE</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {leaderboard.length > 0 ? (
+                      leaderboard.map((entry, i) => (
+                        <tr key={i}>
+                          <td>{entry.name}</td>
+                          <td className="text-end text-indigo fw-bold">{entry.score}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="2" className="text-center text-muted small py-3 italic">No scores yet</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </Table>
+              </div>
             </Stack>
           </Card.Body>
         </Card>
       </Col>
+
+      <Modal show={showModal} onHide={handleClose} centered contentClassName="score-card text-light">
+        <Modal.Header closeButton className="border-secondary text-white">
+          <Modal.Title className="fw-bold">Game Finished!</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="text-center mb-4">
+            <div className="small text-light-gray text-uppercase fw-bold mb-1">Your Final Score</div>
+            <div className="display-4 fw-bold text-indigo">{score}</div>
+          </div>
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Label className="small text-light-gray fw-bold">NAME</Form.Label>
+              <Form.Control 
+                type="text" 
+                placeholder="Enter your name" 
+                value={playerName}
+                onChange={(e) => setPlayerName(e.target.value)}
+                className="bg-dark border-secondary text-light rounded-pill px-3 shadow-none"
+              />
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer className="border-secondary">
+          <Button variant="outline-light" className="rounded-pill px-4" onClick={handleClose}>
+            Cancel
+          </Button>
+          <Button variant="indigo" className="rounded-pill px-4" onClick={handleSaveScore}>
+            Save Score
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </>
   );
 };
