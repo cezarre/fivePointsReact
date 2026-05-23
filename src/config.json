@@ -4,12 +4,12 @@
   "POINT": {
     "RADIUS": 4,
     "MOUSE_LISTENER_RADIUS": 10,
-    "STROKE_COLOR_UNFILLED": "gray",
-    "STROKE_COLOR_FILLED": "black",
-    "STROKE_COLOR_ORIGIN": "darkblue"
+    "STROKE_COLOR_UNFILLED": "#475569",
+    "STROKE_COLOR_FILLED": "#F8FAFC",
+    "STROKE_COLOR_ORIGIN": "#818CF8"
   },
   "BLACK_LINE": {
-    "STROKE": "black",
+    "STROKE": "#94A3B8",
     "STROKE_WIDTH": 2
   },
   "STAGE": {

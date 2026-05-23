@@ -3,7 +3,7 @@ import { Stage, Layer } from 'react-konva';
 import Point from './point';
 import BlackLine from './blackLine';
 import configData from '../config.json';
-import { Col, Button, Badge, Row } from 'react-bootstrap';
+import { Col, Button, Badge, Row, Card, Stack } from 'react-bootstrap';
 import { useGameState } from '../hooks/useGameState';
 import { normalizeLine, validateMove } from '../utils/gameRules';
 
@@ -92,19 +92,20 @@ const Canvas = () => {
           </Layer>
         </Stage>
       </Col>
-      <Col xs className='rightpanel__col'>
-        <div className='conteiner rightpanel__conteiner'>
-          <Row>
-            <div className='score'>
-              Score <Badge bg='info'>{score}</Badge>
-            </div>
-          </Row>
-          <Row>
-            <Button variant='outline-dark' onClick={handleUndo} className='undo_button'>
-              Undo
-            </Button>
-          </Row>
-        </div>
+      <Col xs={12} md={3} className='rightpanel__col mt-3 mt-md-0'>
+        <Card className="score-card shadow-sm border-0 rounded-4 overflow-hidden">
+          <Card.Body className="p-4">
+            <Stack gap={4}>
+              <div className="text-center">
+                <div className="small text-light-gray text-uppercase fw-bold mb-1">Current Score</div>
+                <div className="display-4 fw-bold text-indigo">{score}</div>
+              </div>
+              <Button variant='dark' size="lg" onClick={handleUndo} className='rounded-pill py-2 shadow-sm'>
+                Undo Move
+              </Button>
+            </Stack>
+          </Card.Body>
+        </Card>
       </Col>
     </>
   );
