@@ -253,7 +253,7 @@ const Canvas = () => {
           <Card.Body className="p-4">
             <Stack gap={4}>
               <div className="text-center">
-                <div className="small text-light-gray text-uppercase fw-bold mb-1">Current Score</div>
+                <div className="medium text-light-gray text-uppercase fw-bold mb-1">Current Score</div>
                 <div className="display-4 fw-bold text-indigo">{score}</div>
                 {isGameOver && (
                   <Badge bg="danger" className="mt-2">Game Over - No Moves Left</Badge>
@@ -279,8 +279,8 @@ const Canvas = () => {
                 Finish Game
               </Button>
 
-              <div className="mt-2 pt-3 border-top border-secondary">
-                <div className="small text-light-gray text-uppercase fw-bold mb-2">Leaderboard</div>
+              <div className="pt-3 border-top border-secondary leaderboard-section">
+                <div className="medium text-light-gray text-uppercase fw-bold mb-2">Leaderboard</div>
                 <Table responsive borderless hover size="sm" variant="dark" className="leaderboard-table mb-0">
                   <thead>
                     <tr className="text-muted small border-bottom border-secondary">

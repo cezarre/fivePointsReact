@@ -10,7 +10,7 @@ function App() {
       <Container fluid className="px-0 py-2 bg-dark-theme min-vh-100">
         <Navbar variant="dark" className="navbar mb-4 border-bottom border-secondary bg-transparent px-4">
           <Navbar.Brand className="navbar-brand" href="/">
-            <span className="fw-bold text-light">Five Points</span> Game
+            <span className="fw-bold text-light" style={{ fontSize: '26px' }}>Morpion Solitaire</span>
           </Navbar.Brand>
         </Navbar>
 
