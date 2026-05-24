@@ -20,7 +20,12 @@ const Canvas = () => {
   const [leaderboard, setLeaderboard] = useState([]);
   const [isGameOver, setIsGameOver] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showModalHints, setShowModalHints] = useState(false);
   const [playerName, setPlayerName] = useState('');
+  const [modalEligible, setModalEligible] = useState(true);
+
+  const [isLeaderboardable, setIsLeaderboardable] = useState(true);
+  const [isHintUsed, setIsHintUsed] = useState(false);
 
   const { lines, points, addLine, undo, score, reset } = useGameState();
 
@@ -87,6 +92,8 @@ const Canvas = () => {
     setShouldShowLine(false);
     setHint(null);
     setIsGameOver(false);
+    setIsLeaderboardable(true);
+    setIsHintUsed(false);
   };
 
   const handleClickOnPoint = (x, y) => {
@@ -120,7 +127,35 @@ const Canvas = () => {
     return true;
   };
 
-  const handleHint = () => {
+    const handleHint = () => {
+    if (isGameOver) return;
+
+    if (isLeaderboardable) {
+      setShowModalHints(true);
+      return;
+    }
+
+    const moves = getValidMoves();
+    if (moves.length > 0) {
+      setIsHintUsed(true);
+      const randomMove = moves[Math.floor(Math.random() * moves.length)];
+      setHint(randomMove);
+    }
+  };
+
+  const handleFinish = () => {
+    setModalEligible(isLeaderboardable);
+    setShowModal(true);
+  };
+
+  const handleClose = () => setShowModal(false);
+
+  const handleCloseHints = () => setShowModalHints(false);
+  const handleContinueHints = () => {
+    setIsLeaderboardable(false);
+    setIsHintUsed(true);
+    setShowModalHints(false);
+
     const moves = getValidMoves();
     if (moves.length > 0) {
       const randomMove = moves[Math.floor(Math.random() * moves.length)];
@@ -128,10 +163,13 @@ const Canvas = () => {
     }
   };
 
-  const handleFinish = () => setShowModal(true);
-  const handleClose = () => setShowModal(false);
-
   const handleSaveScore = async () => {
+    if (!isLeaderboardable) {
+      setShowModal(false);
+      handleRestart();
+      return;
+    }
+
     if (!playerName.trim()) return;
 
     const { error } = await supabase
@@ -148,6 +186,11 @@ const Canvas = () => {
       handleRestart();
     }
   };
+
+  const hendleRestartWithoutSaving = () => {
+    setShowModal(false);
+    handleRestart();
+  }
 
   const handleMouseMove = e => {
     if (!shouldShowLine) return;
@@ -182,12 +225,12 @@ const Canvas = () => {
             {hint && (
               <Line
                 points={[hint.x1, hint.y1, hint.x2, hint.y2]}
-                stroke="#A5B4FC"
+                stroke="#00ff6a"
                 strokeWidth={configData.BLACK_LINE.STROKE_WIDTH + 2}
-                dash={[10, 5]}
                 shadowColor="#A5B4FC"
                 shadowBlur={10}
                 opacity={0.8}
+                lineCap="round"
               />
             )}
           </Layer>
@@ -231,11 +274,9 @@ const Canvas = () => {
                 variant='success' 
                 onClick={handleFinish} 
                 className='rounded-pill py-2 shadow-sm'
+                disabled={score === 0}
               >
                 Finish Game
-              </Button>
-              <Button variant='outline-danger' size="sm" onClick={handleRestart} className='rounded-pill py-1 shadow-sm mt-2'>
-                Restart Game
               </Button>
 
               <div className="mt-2 pt-3 border-top border-secondary">
@@ -243,6 +284,7 @@ const Canvas = () => {
                 <Table responsive borderless hover size="sm" variant="dark" className="leaderboard-table mb-0">
                   <thead>
                     <tr className="text-muted small border-bottom border-secondary">
+                      <th>RANK</th>
                       <th>NAME</th>
                       <th className="text-end">SCORE</th>
                     </tr>
@@ -251,6 +293,7 @@ const Canvas = () => {
                     {leaderboard.length > 0 ? (
                       leaderboard.map((entry, i) => (
                         <tr key={i}>
+                          <td>{i + 1}.</td>
                           <td>{entry.name}</td>
                           <td className="text-end text-indigo fw-bold">{entry.score}</td>
                         </tr>
@@ -268,6 +311,26 @@ const Canvas = () => {
         </Card>
       </Col>
 
+      <Modal show={showModalHints} onHide={() => setShowModalHints(false)} centered contentClassName="score-card text-light">
+        <Modal.Header closeButton className="border-secondary text-white">
+          <Modal.Title className="fw-bold">Warning!</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="text-center mb-4">
+            <div className="small text-light-gray text-uppercase fw-bold mb-1">If you continue, you won't be able to save score.</div>
+          </div>
+        </Modal.Body>
+        <Modal.Footer className="border-secondary">
+          <Button variant="outline-light" className="rounded-pill px-4" onClick={handleCloseHints}>
+            Cancel
+          </Button>
+          <Button variant="indigo" className="rounded-pill px-4" onClick={handleContinueHints}>
+            Continue
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+
       <Modal show={showModal} onHide={handleClose} centered contentClassName="score-card text-light">
         <Modal.Header closeButton className="border-secondary text-white">
           <Modal.Title className="fw-bold">Game Finished!</Modal.Title>
@@ -277,28 +340,38 @@ const Canvas = () => {
             <div className="small text-light-gray text-uppercase fw-bold mb-1">Your Final Score</div>
             <div className="display-4 fw-bold text-indigo">{score}</div>
           </div>
-          <Form>
-            <Form.Group className="mb-3">
-              <Form.Label className="small text-light-gray fw-bold">NAME</Form.Label>
-              <Form.Control 
-                type="text" 
-                placeholder="Enter your name" 
-                value={playerName}
-                onChange={(e) => setPlayerName(e.target.value)}
-                className="bg-dark border-secondary text-light rounded-pill px-3 shadow-none"
-              />
-            </Form.Group>
-          </Form>
+          {modalEligible ? (
+            <Form>
+              <Form.Group className="mb-3">
+                <Form.Label className="small text-light-gray fw-bold">NAME</Form.Label>
+                <Form.Control 
+                  type="text" 
+                  placeholder="Enter your name" 
+                  value={playerName}
+                  onChange={(e) => setPlayerName(e.target.value)}
+                  className="bg-dark border-secondary text-light rounded-pill px-3 shadow-none"
+                />
+              </Form.Group>
+            </Form>
+          ) : (
+            <div className="text-center text-muted small mt-2">Score will not be saved (Hint was used)</div>
+          )}
         </Modal.Body>
         <Modal.Footer className="border-secondary">
           <Button variant="outline-light" className="rounded-pill px-4" onClick={handleClose}>
             Cancel
           </Button>
+          {modalEligible  ? (
+            <Button variant="outline-light" className="rounded-pill px-4" onClick={hendleRestartWithoutSaving}>
+               Restart Without Saving
+            </Button>
+          ) : null}
           <Button variant="indigo" className="rounded-pill px-4" onClick={handleSaveScore}>
-            Save Score
+            {modalEligible  ? 'Save Score' : 'Close & Restart'}
           </Button>
         </Modal.Footer>
       </Modal>
+
     </>
   );
 };

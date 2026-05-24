@@ -9,6 +9,9 @@ const BlackLine = props => {
       stroke={props.stroke || configData.BLACK_LINE.STROKE}
       strokeWidth={configData.BLACK_LINE.STROKE_WIDTH}
       dash={props.dash}
+      lineCap="round"
+      lineJoin="round"
+      tension={0.5}
     />
    );
 };
