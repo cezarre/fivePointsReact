@@ -22,7 +22,7 @@ const Canvas = () => {
   const [showModal, setShowModal] = useState(false);
   const [playerName, setPlayerName] = useState('');
 
-  const { lines, points, addLine, undo, score } = useGameState();
+  const { lines, points, addLine, undo, score, reset } = useGameState();
 
   // Logic to calculate valid moves for Hint and Game Over check
   const getValidMoves = () => {
@@ -54,7 +54,7 @@ const Canvas = () => {
       .from('five_points_game_scores')
       .select('name, score')
       .order('score', { ascending: false })
-      .limit(10);
+      .limit(6);
 
     if (error) {
       console.error('Supabase Fetch Error:', error.message, '| Hint:', error.hint);
@@ -63,16 +63,27 @@ const Canvas = () => {
     }
   };
 
-  // Check for game over whenever lines or points change
+  // Fetch scores only on mount
   useEffect(() => {
     fetchScores();
+  }, []);
+
+  // Check for game over whenever the board state changes
+  useEffect(() => {
     if (points.length > 0 && getValidMoves().length === 0) {
       setIsGameOver(true);
     }
-  }, [lines, points]);
+  }, [points]);
 
   const handleUndo = () => {
     if (!undo()) return;
+    setShouldShowLine(false);
+    setHint(null);
+    setIsGameOver(false);
+  };
+
+  const handleRestart = () => {
+    if (reset) reset();
     setShouldShowLine(false);
     setHint(null);
     setIsGameOver(false);
@@ -132,6 +143,9 @@ const Canvas = () => {
     } else {
       setShowModal(false);
       fetchScores(); // Refresh the leaderboard after saving
+      
+      // Restart the game
+      handleRestart();
     }
   };
 
@@ -219,6 +233,9 @@ const Canvas = () => {
                 className='rounded-pill py-2 shadow-sm'
               >
                 Finish Game
+              </Button>
+              <Button variant='outline-danger' size="sm" onClick={handleRestart} className='rounded-pill py-1 shadow-sm mt-2'>
+                Restart Game
               </Button>
 
               <div className="mt-2 pt-3 border-top border-secondary">

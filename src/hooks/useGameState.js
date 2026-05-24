@@ -23,11 +23,21 @@ export const useGameState = () => {
     return true;
   };
 
+  const reset = () => {
+    if (lines.length === 0) return false;
+
+    const updatedLines = [];
+    setLines(updatedLines);
+    setPoints(recomputePoints(updatedLines));
+    return true;
+  };
+
   return {
     lines,
     points,
     addLine,
     undo,
     score: lines.length,
+    reset,
   };
 };
