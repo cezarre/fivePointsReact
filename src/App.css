@@ -178,3 +178,8 @@ html, body {
 .leaderboard-section {
   margin-top: 1.5rem !important;
 }
+
+.warning-content {
+  max-width: 500px;
+  animation: fadeIn 0.5s ease-out;
+}

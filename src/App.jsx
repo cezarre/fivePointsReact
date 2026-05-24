@@ -1,10 +1,36 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Canvas from './components/canvas'
 import { Container, Row, Col, Navbar, Card, ListGroup } from 'react-bootstrap'
 import 'bootstrap/dist/css/bootstrap.css'
 import './App.css';
 
 function App() {
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+  useEffect(() => {
+    const checkTouch = () => {
+      return (
+        window.matchMedia("(pointer: coarse)").matches ||
+        navigator.maxTouchPoints > 0 ||
+        'ontouchstart' in window
+      );
+    };
+
+    setIsTouchDevice(checkTouch());
+  }, []);
+
+  if (isTouchDevice) {
+    return (
+      <div className="mobile-warning d-flex align-items-center justify-content-center vh-100 bg-dark-theme text-light px-4 text-center">
+        <div className="warning-content">
+          <h1 className="fw-bold text-indigo mb-3" style={{ fontSize: '2.5rem' }}>Device Not Supported</h1>
+          <p className="lead mb-4">Morpion Solitaire requires precise pointer interaction and is currently not supported on touch-based devices.</p>
+          <p className="text-muted small">Please visit us from a desktop or laptop to play.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <React.Fragment>
       <Container fluid className="px-0 py-2 bg-dark-theme min-vh-100">
